@@ -13,6 +13,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"strings"
 )
 
 var typeCollection *mongo.Collection = configs.GetCollection(configs.DB, "types")
@@ -23,11 +25,16 @@ func CreateType() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		var typee models.Type
 		defer cancel()
-
 		//validate the request body
-		if err := c.BindJSON(&typee); err != nil {
+		if err := c.ShouldBind(&typee); err != nil {
 			c.JSON(http.StatusBadRequest, responses.TypeResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
 			return
+		}
+		if len(c.Request.PostForm["name"]) != 0 {
+			typee.Name = strings.ToUpper(c.Request.PostForm["name"][0])
+		}
+		if len(c.Request.PostForm["color"]) != 0 {
+			typee.Color = c.Request.PostForm["color"][0]
 		}
 
 		//use the validator library to validate required fields
@@ -59,21 +66,41 @@ func CreateType() gin.HandlerFunc {
 	}
 }
 
-func GetAType() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		typeName := c.Param("typeName")
-		var typee models.Type
-		defer cancel()
+func GetAllTypes() []models.Type {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	var types []models.Type
+	defer cancel()
+	filter := bson.D{}
+	opts := options.Find().SetSort(bson.D{{"name", 1}})
 
-		err := typeCollection.FindOne(ctx, bson.M{"name": typeName}).Decode(&typee)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, responses.TypeResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
-			return
-		}
+	results, err := typeCollection.Find(ctx, filter, opts)
 
-		c.JSON(http.StatusOK, responses.TypeResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": typee}})
+	if err != nil {
+		return types
 	}
+
+	//reading from the db in an optimal way
+	defer results.Close(ctx)
+	for results.Next(ctx) {
+		var singleType models.Type
+		if err = results.Decode(&singleType); err != nil {
+			return types
+		}
+		types = append(types, singleType)
+	}
+
+	return types
+}
+
+func GetAType(ctx *gin.Context) models.Type {
+	typeName := ctx.Param("typeName")
+	var typee models.Type
+
+	err := typeCollection.FindOne(ctx, bson.M{"name": typeName}).Decode(&typee)
+	if err != nil {
+	}
+	return typee
+
 }
 
 func EditAType() gin.HandlerFunc {
@@ -134,38 +161,6 @@ func DeleteAType() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK,
-			responses.TypeResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": "Type successfully deleted!"}},
-		)
-	}
-}
-
-func GetAllTypes() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		var types []models.Type
-		defer cancel()
-
-		results, err := typeCollection.Find(ctx, bson.M{})
-
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, responses.TypeResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
-			return
-		}
-
-		//reading from the db in an optimal way
-		defer results.Close(ctx)
-		for results.Next(ctx) {
-			var singleType models.Type
-			if err = results.Decode(&singleType); err != nil {
-				c.JSON(http.StatusInternalServerError, responses.TypeResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
-			}
-
-			types = append(types, singleType)
-		}
-
-		c.JSON(http.StatusOK,
-			responses.TypeResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": types}},
-		)
+		c.Redirect(http.StatusFound, "/type")
 	}
 }
