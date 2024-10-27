@@ -9,11 +9,12 @@ import (
 func main() {
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/**/*")
+	router.Static("/assets", "./assets")
 	//run database
 	configs.ConnectDB()
 
 	//routes
-	routes.TypeRoute(router) //add this
+	routes.MainRoute(router) //add this
 
 	router.Run("localhost:8080")
 }

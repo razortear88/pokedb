@@ -1,33 +1,37 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/razortear88/pokedb/controllers"
-	"net/http"
 )
 
-func TypeRoute(router *gin.Engine) {
-	router.GET("/type/create", func(c *gin.Context) {
+func TypeRoute(route *gin.RouterGroup) {
+	typeRoute := route.Group("type")
+
+	typeRoute.GET("/create", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "create_type.html", gin.H{
 			"title": "Create Type",
 		})
 	})
-	router.GET("/type", func(c *gin.Context) {
+	typeRoute.GET("", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "list_type.html", gin.H{
 			"types": controllers.GetAllTypes(),
+			"title": "List Type",
 		})
 	})
-	router.GET("/type/:typeName", func(c *gin.Context) {
+	typeRoute.GET("/:typeName", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "detail_type.html", gin.H{
-			"type": controllers.GetAType(c),
+			"type": controllers.GetType(c),
 		})
 	})
-	router.POST("/type", controllers.CreateType())
-	router.PUT("/type/:typeName", controllers.EditAType())
-	router.GET("/type/:typeName/update", func(c *gin.Context) {
+	typeRoute.POST("", controllers.CreateType())
+	typeRoute.GET("/:typeName/update", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "update_type.html", gin.H{
-			"type": controllers.GetAType(c),
+			"type": controllers.GetType(c),
 		})
 	})
-	router.POST("/type/:typeName/delete", controllers.DeleteAType())
+	typeRoute.POST("/:typeName/update", controllers.EditType())
+	typeRoute.POST("/:typeName/delete", controllers.DeleteType())
 }

@@ -9,12 +9,13 @@ import (
 	"github.com/razortear88/pokedb/models"
 	"github.com/razortear88/pokedb/responses"
 
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"strings"
 )
 
 var typeCollection *mongo.Collection = configs.GetCollection(configs.DB, "types")
@@ -56,13 +57,9 @@ func CreateType() gin.HandlerFunc {
 			Color: typee.Color,
 		}
 
-		result, err := typeCollection.InsertOne(ctx, newType)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, responses.TypeResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
-			return
-		}
+		typeCollection.InsertOne(ctx, newType)
 
-		c.JSON(http.StatusCreated, responses.TypeResponse{Status: http.StatusCreated, Message: "success", Data: map[string]interface{}{"data": result}})
+		c.Redirect(http.StatusFound, "/type")
 	}
 }
 
@@ -92,18 +89,20 @@ func GetAllTypes() []models.Type {
 	return types
 }
 
-func GetAType(ctx *gin.Context) models.Type {
+func GetType(ctx *gin.Context) models.Type {
 	typeName := ctx.Param("typeName")
 	var typee models.Type
 
-	err := typeCollection.FindOne(ctx, bson.M{"name": typeName}).Decode(&typee)
-	if err != nil {
+	typeCollection.FindOne(ctx, bson.M{"name": typeName}).Decode(&typee)
+
+	if len(typee.Color) == 4 {
+		typee.Color = "#" + strings.Repeat(string(typee.Color[1]), 2) + strings.Repeat(string(typee.Color[2]), 2) + strings.Repeat(string(typee.Color[3]), 2)
 	}
 	return typee
 
 }
 
-func EditAType() gin.HandlerFunc {
+func EditType() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		typeName := c.Param("typeName")
@@ -111,9 +110,17 @@ func EditAType() gin.HandlerFunc {
 		defer cancel()
 
 		//validate the request body
-		if err := c.BindJSON(&typee); err != nil {
+		if err := c.ShouldBind(&typee); err != nil {
 			c.JSON(http.StatusBadRequest, responses.TypeResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
 			return
+		}
+
+		if len(c.Request.PostForm["name"]) != 0 {
+			typee.Name = strings.ToUpper(c.Request.PostForm["name"][0])
+		}
+
+		if len(c.Request.PostForm["color"]) != 0 {
+			typee.Color = c.Request.PostForm["color"][0]
 		}
 
 		//use the validator library to validate required fields
@@ -123,26 +130,17 @@ func EditAType() gin.HandlerFunc {
 		}
 
 		update := bson.M{"name": typee.Name, "color": typee.Color}
-		result, err := typeCollection.UpdateOne(ctx, bson.M{"name": typeName}, bson.M{"$set": update})
+		_, err := typeCollection.UpdateOne(ctx, bson.M{"name": typeName}, bson.M{"$set": update})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, responses.TypeResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
 			return
 		}
 
-		var updatedType models.Type
-		if result.MatchedCount == 1 {
-			err := typeCollection.FindOne(ctx, bson.M{"name": typeName}).Decode(&updatedType)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, responses.TypeResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
-				return
-			}
-		}
-
-		c.JSON(http.StatusOK, responses.TypeResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": updatedType}})
+		c.Redirect(http.StatusFound, "/type")
 	}
 }
 
-func DeleteAType() gin.HandlerFunc {
+func DeleteType() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		typeName := c.Param("typeName")
