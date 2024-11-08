@@ -1,8 +1,14 @@
+{{ if .title }}
+<title>{{ .title }}</title>
+{{ else }}
+<title>Pokedb</title>
+{{ end }}
 {{ template "header.html" }}
-        {{ if ne .type.Name "" }}
-            <p>Name: {{ .type.Name }}</p>
-            <p>Color: {{ .type.Color }}</p>
-        {{ else }}
-            <p>Types Does Not Exists</p>
-        {{ end }}
+    <button onclick="location.href='/type'"><-</button>
+    {{ if ne .type.Name "" }}
+        <p>Name: {{ .type.Name }}</p>
+        <p>Color: {{ .type.Color }}</p>
+    {{ else }}
+        <p>Type Does Not Exists</p>
+    {{ end }}
 {{ template "footer.html" }}

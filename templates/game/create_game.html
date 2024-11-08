@@ -1,0 +1,16 @@
+{{ if .title }}
+<title>{{ .title }}</title>
+{{ else }}
+<title>Pokedb</title>
+{{ end }}
+{{ template "header.html" }}
+    <button onclick="location.href='/game'"><-</button>
+    <form action="/game" method="post" enctype="multipart/form-data">
+        <label for="name">Name</label><br>
+        <input type="text" placeholder="Game Name" id="name" name="name"><br>
+        <label for="generation">Generation</label><br>
+        <input type="number" id="generation" name="generation" placeholder="1" min="1"><br><br>
+        <input type="file" id="cover" name="cover" accept="image/png, image/jpeg, image/jpg"/><br><br>
+        <button type="submit">Submit</button>
+    </form> 
+{{ template "footer.html" }}

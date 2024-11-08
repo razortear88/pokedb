@@ -23,13 +23,15 @@ func TypeRoute(route *gin.RouterGroup) {
 	})
 	typeRoute.GET("/:typeName", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "detail_type.html", gin.H{
-			"type": controllers.GetType(c),
+			"type":  controllers.GetType(c),
+			"title": c.Param("typeName"),
 		})
 	})
 	typeRoute.POST("", controllers.CreateType())
 	typeRoute.GET("/:typeName/update", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "update_type.html", gin.H{
-			"type": controllers.GetType(c),
+			"type":  controllers.GetType(c),
+			"title": "Update Type " + c.Param("typeName"),
 		})
 	})
 	typeRoute.POST("/:typeName/update", controllers.EditType())

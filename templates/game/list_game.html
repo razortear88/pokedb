@@ -1,0 +1,27 @@
+{{ if .title }}
+<title>{{ .title }}</title>
+{{ else }}
+<title>Pokedb</title>
+{{ end }}
+{{ template "header.html" }}
+    {{ if gt (len .games) 0 }}
+        <table border="black">
+            <tr>
+                <th><center>Name</center></th>
+                <th colspan="2"><center>Action</center></th>
+            </tr>
+            {{range .games}}
+                <tr>
+                    <td><span style="width: 10px;"><a style="background-color: skyblue; color:white;" class="border rounded-pill px-3 text-decoration-none fw-bold" href="/game/{{ .Name }}">{{ .Name }}</a></span></td>
+                    <td><button  onclick="location.href = '/game/{{ .Name }}/update';">Update</button></td>
+                    <form action="/game/{{ .Name }}/delete" method="post">
+                        <td><button type="submit" onclick="return confirm('are you sure?')">Delete</button></td>
+                    </form>
+                </tr>
+            {{end}}
+        </table>
+    {{ else }}
+        <p> No Game Created</p>
+    {{ end }}
+    <td><span style="width: 10px;"><a style="background-color: grey; color:white;" class="border rounded-pill px-3 text-decoration-none fw-bold" href="/game/create">+</a></span></td>
+{{ template "footer.html" }}

@@ -1,0 +1,27 @@
+{{ if .title }}
+<title>{{ .title }}</title>
+{{ else }}
+<title>Pokedb</title>
+{{ end }}
+{{ template "header.html" }}
+    {{ if gt (len .abilities) 0 }}
+        <table border="black">
+            <tr>
+                <th><center>Name</center></th>
+                <th colspan="2"><center>Action</center></th>
+            </tr>
+            {{range .abilities}}
+                <tr>
+                    <td><span style="width: 10px;"><a style="background-color: lime; color:white;" class="border rounded-pill px-3 text-decoration-none fw-bold" href="/ability/{{ .Name }}">{{ .Name }}</a></span></td>
+                    <td><button  onclick="location.href = '/ability/{{ .Name }}/update';">Update</button></td>
+                    <form action="/ability/{{ .Name }}/delete" method="post">
+                        <td><button type="submit" onclick="return confirm('are you sure?')">Delete</button></td>
+                    </form>
+                </tr>
+            {{end}}
+        </table>
+    {{ else }}
+        <p> No Ability Created</p>
+    {{ end }}
+    <td><span style="width: 10px;"><a style="background-color: grey; color:white;" class="border rounded-pill px-3 text-decoration-none fw-bold" href="/ability/create">+</a></span></td>
+{{ template "footer.html" }}

@@ -1,0 +1,15 @@
+{{ if .title }}
+<title>{{ .title }}</title>
+{{ else }}
+<title>Pokedb</title>
+{{ end }}
+{{ template "header.html" }}
+    <button onclick="location.href='/game'"><-</button>
+    <form action="/game/{{ .game.Name }}/update" method="post">
+        <label for="name">Name</label><br>
+        <input type="text" placeholder="Game Name" id="name" name="name" value="{{ .game.Name }}"><br>
+        <label for="generation">Generation</label><br>
+        <input type="number" id="generation" name="generation" min="1" value="{{ .game.Generation }}"><br><br>
+        <button type="submit">Submit</button>
+    </form> 
+{{ template "footer.html" }}

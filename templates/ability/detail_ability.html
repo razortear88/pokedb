@@ -1,0 +1,14 @@
+{{ if .title }}
+<title>{{ .title }}</title>
+{{ else }}
+<title>Pokedb</title>
+{{ end }}
+{{ template "header.html" }}
+    <button onclick="location.href='/ability'"><-</button>
+    {{ if ne .ability.Name "" }}
+        <p>Name: {{ .ability.Name }}</p>
+        <p>Color: {{ .ability.Description }}</p>
+    {{ else }}
+        <p>Ability Does Not Exists</p>
+    {{ end }}
+{{ template "footer.html" }}
