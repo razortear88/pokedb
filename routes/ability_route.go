@@ -18,6 +18,7 @@ func AbilityRoute(route *gin.RouterGroup) {
 	abilityRoute.GET("", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "list_ability.html", gin.H{
 			"abilities": controllers.GetAllAbilities(),
+			"title":     "List Ability",
 		})
 	})
 	abilityRoute.GET("/:abilityName", func(c *gin.Context) {

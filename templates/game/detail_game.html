@@ -6,7 +6,7 @@
 {{ template "header.html" }}
     <button onclick="location.href='/game'"><-</button><br>
     {{ if ne .game.Name "" }}
-        <img width="200" src="{{ .game.Cover }}">
+        <img width="200" src="{{ .game.Cover }}" />
         <p>Name: {{ .game.Name }}</p>
         <p>Generation: {{ .game.Generation }}</p>
     {{ else }}

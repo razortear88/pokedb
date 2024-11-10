@@ -162,3 +162,11 @@ func DeleteType() gin.HandlerFunc {
 		c.Redirect(http.StatusFound, "/type")
 	}
 }
+
+func GetColor(typeName string) string {
+	var typee models.Type
+
+	typeCollection.FindOne(nil, bson.M{"name": typeName}).Decode(&typee)
+
+	return typee.Color
+}

@@ -7,9 +7,11 @@
      <button onclick="location.href='/type'"><-</button>
      <form action="/type" method="post">
           <label for="name">Name</label><br>
-          <input type="text" placeholder="Type Name" id="name" name="name"><br>
+          <input type="text" placeholder="Type Name" id="name" name="name" required><br>
+
           <label for="color">Color Hex</label><br>
-          <input type="color" id="color" default value="#ff0000" name="color"><br>
+          <input type="color" id="color" default value="#ff0000" name="color" required><br>
+          
           <button type="submit">Submit</button>
      </form> 
 {{ template "footer.html" }}

@@ -7,9 +7,11 @@
     <button onclick="location.href='/ability'"><-</button>
     <form action="/ability" method="post">
         <label for="name">Name</label><br>
-        <input type="text" placeholder="Ability Name" id="name" name="name"><br>
+        <input type="text" placeholder="Ability Name" id="name" name="name" required><br>
+
         <label for="description">Description</label><br>
-        <textarea placeholder="Ability Description" id="description" name="description"></textarea><br><br>
+        <textarea placeholder="Ability Description" id="description" name="description" required></textarea><br><br>
+        
         <button type="submit">Submit</button>
     </form> 
 {{ template "footer.html" }}

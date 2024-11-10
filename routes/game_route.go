@@ -18,6 +18,7 @@ func GameRoute(route *gin.RouterGroup) {
 	gameRoute.GET("", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "list_game.html", gin.H{
 			"games": controllers.GetAllGames(),
+			"title": "List Game",
 		})
 	})
 	gameRoute.GET("/:gameName", func(c *gin.Context) {

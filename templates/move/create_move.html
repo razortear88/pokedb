@@ -1,0 +1,47 @@
+{{ if .title }}
+<title>{{ .title }}</title>
+{{ else }}
+<title>Pokedb</title>
+{{ end }}
+{{ template "header.html" }}
+    <button onclick="location.href='/move'"><-</button>
+    <form action="/move" method="post">
+        <label for="name">Name</label><br>
+        <input type="text" placeholder="Move Name" id="name" name="name" required><br>
+
+        <label for="category">Category</label><br>
+        <select name="category"><br>
+            <option value="Physical">Physical</option>
+            <option value="Special">Special</option>
+            <option value="Status">Status</option>
+        </select><br>
+
+        <label for="typeName">Type Name</label><br>
+        <select name="typeName"><br>
+            
+            {{ range .types }}
+                <option value="{{ .Name }}">{{ .Name }}</option>
+            {{ end }}
+        </select><br>
+
+        <label for="power">Power</label><br>
+        <input type="number" name="power" placeholder="0" min="0" required><br>
+
+        <label for="accuracy">Accuracy</label><br>
+        <input type="number" name="accuracy" placeholder="0" min="0" max="100" required><br>
+
+        <label for="pp">PP</label><br>
+        <input type="number" name="pp" placeholder="1" min="1" required><br>
+
+        <label for="makeContact">Make Contact</label><br>
+        <select name="makeContact"><br>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </select><br>
+
+        <label for="description">Effect</label><br>
+        <textarea placeholder="Move Effect" name="effect" required></textarea><br><br>
+
+        <button type="submit">Submit</button>
+    </form> 
+{{ template "footer.html" }}

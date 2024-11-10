@@ -5,11 +5,17 @@
 {{ end }}
 {{ template "header.html" }}
     <button onclick="location.href='/ability'"><-</button>
-    <form action="/ability/{{ .ability.Name }}/update" method="post">
-        <label for="name">Name</label><br>
-        <input type="text" placeholder="Ability Name" id="name" name="name" value="{{ .ability.Name }}"><br>
-        <label for="description">Description</label><br>
-        <textarea placeholder="Ability Description" id="description" name="description">{{ .ability.Description }}</textarea><br><br>
-        <button type="submit">Submit</button>
-    </form> 
+    {{ if ne .ability.Name "" }}
+        <form action="/ability/{{ .ability.Name }}/update" method="post">
+            <label for="name">Name</label><br>
+            <input type="text" placeholder="Ability Name" id="name" name="name" value="{{ .ability.Name }}" required><br>
+
+            <label for="description">Description</label><br>
+            <textarea placeholder="Ability Description" id="description" name="description" required>{{ .ability.Description }}</textarea><br><br>
+            
+            <button type="submit">Submit</button>
+        </form> 
+    {{ else }}
+        <p>Ability Does Not Exists</p>
+    {{ end }}
 {{ template "footer.html" }}

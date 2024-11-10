@@ -5,11 +5,17 @@
 {{ end }}
 {{ template "header.html" }}
      <button onclick="location.href='/type'"><-</button>
-     <form action="/type/{{ .type.Name }}/update" method="post">
-          <label for="name">Name</label><br>
-          <input type="text" placeholder="Type Name" id="name" name="name" value="{{ .type.Name }}"><br>
-          <label for="color">Color Hex</label><br>
-          <input type="color" id="color" value="{{ .type.Color }}" name="color"><br><br>
-          <button type="submit">Submit</button>
-     </form> 
+     {{ if ne .type.Name "" }}
+          <form action="/type/{{ .type.Name }}/update" method="post">
+               <label for="name">Name</label><br>
+               <input type="text" placeholder="Type Name" id="name" name="name" value="{{ .type.Name }}" required><br>
+
+               <label for="color">Color Hex</label><br>
+               <input type="color" id="color" value="{{ .type.Color }}" name="color" required><br><br>
+               
+               <button type="submit">Submit</button>
+          </form> 
+     {{ else }}
+          <p>Type Does Not Exists</p>
+     {{ end }}
 {{ template "footer.html" }}

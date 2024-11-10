@@ -39,7 +39,7 @@ func CreateGame() gin.HandlerFunc {
 			return
 		}
 		// setup s3 uploader
-		cfg, configErr := config.LoadDefaultConfig(context.TODO())
+		cfg, configErr := config.LoadDefaultConfig(ctx)
 		if configErr != nil {
 			log.Printf("error: %v", configErr)
 			return
@@ -56,7 +56,7 @@ func CreateGame() gin.HandlerFunc {
 			return
 		}
 
-		result, uploadErr := uploader.Upload(context.TODO(), &s3.PutObjectInput{
+		result, uploadErr := uploader.Upload(ctx, &s3.PutObjectInput{
 			Bucket: aws.String("my-pokedb-project"),
 			Key:    aws.String(file.Filename),
 			Body:   f,
@@ -153,12 +153,24 @@ func EditGame() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		gameName := c.Param("gameName")
 		var game models.Game
+		var oldCover models.Game
+
+		filter := bson.D{{"name", gameName}}
+		project := bson.D{{"cover", 1}}
+		opts := options.FindOne().SetProjection(project)
+		coverErr := gameCollection.FindOne(ctx, filter, opts).Decode(&oldCover)
+		if coverErr != nil {
+			c.JSON(http.StatusInternalServerError, responses.GameResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": coverErr.Error()}})
+			return
+		}
 		defer cancel()
 
-		//validate the request body
-		if err := c.ShouldBind(&game); err != nil {
-			c.JSON(http.StatusBadRequest, responses.GameResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
-			return
+		file, _ := c.FormFile("cover")
+
+		if file == nil {
+			game.Cover = oldCover.Cover
+		} else {
+			game.Cover = file.Filename
 		}
 
 		if len(c.Request.PostForm["name"]) != 0 {
@@ -180,7 +192,56 @@ func EditGame() gin.HandlerFunc {
 			return
 		}
 
-		update := bson.M{"name": game.Name, "generation": game.Generation}
+		if game.Cover != oldCover.Cover {
+			// delete old cover
+			coverFileName := strings.Split(oldCover.Cover, "/")
+
+			input := &s3.DeleteObjectInput{
+				Bucket: aws.String("my-pokedb-project"),
+				Key:    aws.String(coverFileName[len(coverFileName)-1]),
+			}
+
+			cfg, configErr := config.LoadDefaultConfig(ctx)
+
+			if configErr != nil {
+				log.Printf("error: %v", configErr)
+				return
+			}
+
+			// Create an Amazon S3 service client
+			client := s3.NewFromConfig(cfg)
+			_, DeleteErr := client.DeleteObject(c, input)
+
+			if DeleteErr != nil {
+				log.Printf("error: %v", DeleteErr)
+				return
+			}
+			// upload new cover
+			uploader := manager.NewUploader(client)
+
+			f, openErr := file.Open()
+
+			if openErr != nil {
+				log.Fatal(openErr)
+				return
+			}
+
+			result, uploadErr := uploader.Upload(ctx, &s3.PutObjectInput{
+				Bucket: aws.String("my-pokedb-project"),
+				Key:    aws.String(file.Filename),
+				Body:   f,
+				ACL:    "public-read",
+			})
+
+			if uploadErr != nil {
+				log.Fatal(uploadErr)
+				return
+			}
+
+			game.Cover = result.Location
+		}
+
+		update := bson.M{"name": game.Name, "generation": game.Generation, "cover": game.Cover}
 		_, err := gameCollection.UpdateOne(ctx, bson.M{"name": gameName}, bson.M{"$set": update})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, responses.GameResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
@@ -199,7 +260,14 @@ func DeleteGame() gin.HandlerFunc {
 
 		var game models.Game
 
-		gameCollection.FindOne(c, bson.M{"name": gameName}).Decode(&game)
+		filter := bson.D{{"name", gameName}}
+		project := bson.D{{"cover", 1}}
+		opts := options.FindOne().SetProjection(project)
+		coverErr := gameCollection.FindOne(ctx, filter, opts).Decode(&game)
+		if coverErr != nil {
+			c.JSON(http.StatusInternalServerError, responses.GameResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": coverErr.Error()}})
+			return
+		}
 
 		result, err := gameCollection.DeleteOne(ctx, bson.M{"name": gameName})
 		if err != nil {
@@ -221,7 +289,7 @@ func DeleteGame() gin.HandlerFunc {
 			Key:    aws.String(coverFileName[len(coverFileName)-1]),
 		}
 
-		cfg, configErr := config.LoadDefaultConfig(context.TODO())
+		cfg, configErr := config.LoadDefaultConfig(ctx)
 
 		if configErr != nil {
 			log.Printf("error: %v", configErr)

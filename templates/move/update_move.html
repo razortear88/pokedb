@@ -1,0 +1,50 @@
+{{ if .title }}
+<title>{{ .title }}</title>
+{{ else }}
+<title>Pokedb</title>
+{{ end }}
+{{ template "header.html" }}
+    <button onclick="location.href='/move'"><-</button>
+    {{ if ne .move.Name "" }}
+        <form action="/move/{{ .move.Name }}/update" method="post">
+            <label for="name">Name</label><br>
+            <input type="text" placeholder="Move Name" id="name" name="name" required value="{{ .move.Name }}"><br>
+
+            <label for="category">Category</label><br>
+            <select name="category" selected="{{ .move.Category }}"><br>
+                <option value="Physical">Physical</option>
+                <option value="Special">Special</option>
+                <option value="Status">Status</option>
+            </select><br>
+
+            <label for="typeName">Type Name</label><br>
+            <select name="typeName" selected="{{ .move.TypeName }}"><br>
+                {{ range .types }}
+                    <option value="{{ .Name }}">{{ .Name }}</option>
+                {{ end }}
+            </select><br>
+
+            <label for="power">Power</label><br>
+            <input type="number" name="power" placeholder="0" min="0" required value="{{ .move.Power }}"><br>
+
+            <label for="accuracy">Accuracy</label><br>
+            <input type="number" name="accuracy" placeholder="0" min="0" max="100" required value="{{ .move.Accuracy }}"><br>
+
+            <label for="pp">PP</label><br>
+            <input type="number" name="pp" placeholder="1" min="1" required value="{{ .move.PP }}"><br>
+
+            <label for="makeContact">Make Contact</label><br>
+            <select name="makeContact" selected="{{ .move.MakeContact }}"><br>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </select><br>
+
+            <label for="description">Effect</label><br>
+            <textarea placeholder="Move Effect" name="effect" required >{{ .move.Effect }}</textarea><br><br>
+
+            <button type="submit">Submit</button>
+        </form> 
+    {{ else }}
+        <p>Move Does Not Exists</p>
+    {{ end }}
+{{ template "footer.html" }}
