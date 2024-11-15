@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -225,10 +226,27 @@ func DeleteMove() gin.HandlerFunc {
 	}
 }
 
-func GetMoveTypeColor(moveName string) string {
-	var move models.Move
+func GetDetailedMove(ctx *gin.Context) []bson.M {
+	moveName := ctx.Param("moveName")
 
-	moveCollection.FindOne(nil, bson.M{"name": moveName}).Decode(&move)
+	pipeline := mongo.Pipeline{
+		{{"$lookup", bson.D{{"from", "types"}, {"localField", "typename"}, {"foreignField", "name"}, {"as", "lookup"}}}},
+		{{"$unwind", bson.D{{"path", "$lookup"}}}},
+		{{"$match", bson.D{{"name", moveName}}}},
+	}
 
-	return GetColor(move.TypeName)
+	cursor, aggErr := moveCollection.Aggregate(context.TODO(), pipeline)
+	if aggErr != nil {
+		log.Println(aggErr.Error())
+		return []bson.M{}
+	}
+
+	var results []bson.M
+	// cursor.
+	if cursorErr := cursor.All(context.TODO(), &results); cursorErr != nil {
+		panic(cursorErr)
+	}
+
+	return results
+
 }

@@ -24,9 +24,8 @@ func MoveRoute(route *gin.RouterGroup) {
 	})
 	moveRoute.GET("/:moveName", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "detail_move.html", gin.H{
-			"move":  controllers.GetMove(c),
+			"move":  controllers.GetDetailedMove(c),
 			"title": c.Param("moveName"),
-			"color": controllers.GetMoveTypeColor(c.Param("moveName")),
 		})
 	})
 	moveRoute.POST("", controllers.CreateMove())
