@@ -5,14 +5,14 @@
 {{ end }}
 {{ template "header.html" }}
     <button onclick="location.href='/move'"><-</button><br>
-    {{ if ne .move.Name "" }}
+    {{ if .move }}
         <p>Name: {{ .move.name }}</p>
         <p>Category: {{ .move.category }}</p>
-        <p>TypeName: <td><span style="width: 10px;"><a style="background-color: {{ .move.color }}; color:white;" class="border rounded-pill px-3 text-decoration-none fw-bold" href="/type/{{ .TypeName }}">{{ .move.typeName }}</a></span></td></p>
+        <p>TypeName: <td><span style="width: 10px;"><a style="background-color: {{ .move.lookup.color }}; color:white;" class="border rounded-pill px-3 text-decoration-none fw-bold" href="/type/{{ .move.typename }}">{{ .move.typename }}</a></span></td></p>
         <p>Power: {{ .move.power }}</p>
         <p>Accuracy: {{ .move.accuracy }}</p>
         <p>PP: {{ .move.pp }}</p>
-        <p>MakeContact: {{ .move.makeContact }}</p>
+        <p>MakeContact: {{ .move.makecontact }}</p>
         <p>Effect: {{ .move.effect }}</p>
     {{ else }}
         <p>Move Does Not Exists</p>

@@ -21,19 +21,19 @@ func TypeRoute(route *gin.RouterGroup) {
 			"title": "List Type",
 		})
 	})
-	typeRoute.GET("/:typeName", func(c *gin.Context) {
+	typeRoute.GET("/:typename", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "detail_type.html", gin.H{
 			"type":  controllers.GetType(c),
-			"title": c.Param("typeName"),
+			"title": c.Param("typename"),
 		})
 	})
 	typeRoute.POST("", controllers.CreateType())
-	typeRoute.GET("/:typeName/update", func(c *gin.Context) {
+	typeRoute.GET("/:typename/update", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "update_type.html", gin.H{
 			"type":  controllers.GetType(c),
-			"title": "Update Type " + c.Param("typeName"),
+			"title": "Update Type " + c.Param("typename"),
 		})
 	})
-	typeRoute.POST("/:typeName/update", controllers.EditType())
-	typeRoute.POST("/:typeName/delete", controllers.DeleteType())
+	typeRoute.POST("/:typename/update", controllers.EditType())
+	typeRoute.POST("/:typename/delete", controllers.DeleteType())
 }

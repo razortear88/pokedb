@@ -13,10 +13,10 @@ func MainRoute(app *gin.Engine) {
 	AbilityRoute(route)
 	GameRoute(route)
 	MoveRoute(route)
+	PokemonRoute(route)
 	route.GET("", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"title": "Create Typesss",
 		})
 	})
-	// AbilityRoute(route)
 }

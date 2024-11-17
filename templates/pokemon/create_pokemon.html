@@ -1,0 +1,94 @@
+{{ if .title }}
+<title>{{ .title }}</title>
+{{ else }}
+<title>Pokedb</title>
+{{ end }}
+{{ template "header.html" }}
+    {{ 5%+2 }}
+    <button onclick="location.href='/pokemon'"><-</button>
+    <form action="/pokemon" method="post">
+        <label for="name">Name</label><br>
+        <input type="text" placeholder="Pokemon Name" id="name" name="name" required><br>
+
+        <label for="species">Species</label><br>
+        <input type="text" placeholder="Species" id="species" name="species" required><br>
+
+        <label for="nationalno">National No</label><br>
+        <input type="text" placeholder="National No" id="nationalno" name="nationalno" required><br>
+
+        <!-- type -->
+        <label for="type">Type</label><br>
+            {{ range .types }}
+                <label for="type{{ .Name }}"> {{ .Name }}
+                <input type="checkbox" id="type{{ .Name }}" name="type{{ .Name }}" value="{{ .Name }}"><br>
+            {{ end }}
+        <br>
+
+        <input type="file" id="image" name="image" accept="image/png, image/jpeg, image/jpg"/ required><br><br>
+
+        <label for="height">Height (m)</label><br>
+        <input type="number" id="height" step="0.1" min="0" required></input><br>
+
+        <label for="weight">Weight (kg)</label><br>
+        <input type="number" id="weight" step="0.1" min="0" required></input><br>
+
+        <label for="basehp">Base HP</label><br>
+        <input type="number" id="basehp" name="basehp" min="0" required></input><br>
+
+        <label for="minhp">Min HP</label><br>
+        <input type="number" id="minhp" name="minhp" min="0" required></input><br>
+
+        <label for="maxhp">Max HP</label><br>
+        <input type="number" id="maxhp" name="maxhp" min="0" required></input><br>
+
+        <label for="baseattack">Base Attack</label><br>
+        <input type="number" id="baseattack" name="baseattack" min="0" required></input><br>
+
+        <label for="minattack">Min Attack</label><br>
+        <input type="number" id="minattack" name="minattack" min="0" required></input><br>
+
+        <label for="maxattack">Max Attack</label><br>
+        <input type="number" id="maxattack" name="maxattack" min="0" required></input><br>
+
+        <label for="basedefense">Base Defense</label><br>
+        <input type="number" id="basedefense" name="basedefense" min="0" required></input><br>
+
+        <label for="mindefense">Min Defense</label><br>
+        <input type="number" id="mindefense" name="mindefense" min="0" required></input><br>
+
+        <label for="maxdefense">Max Defense</label><br>
+        <input type="number" id="maxdefense" name="maxdefense" min="0" required></input><br>
+
+        <label for="basespattack">Base SP Attack</label><br>
+        <input type="number" id="basespattack" name="basespattack" min="0" required></input><br>
+
+        <label for="minspattack">Min SP Attack</label><br>
+        <input type="number" id="minspattack" name="minspattack" min="0" required></input><br>
+
+        <label for="maxspattack">Max SP Attack</label><br>
+        <input type="number" id="maxspattack" name="maxspattack" min="0" required></input><br>
+
+        <label for="basespdefense">Base SP Defense</label><br>
+        <input type="number" id="basespdefense" name="basespdefense" min="0" required></input><br>
+
+        <label for="minspdefense">Min SP Defense</label><br>
+        <input type="number" id="minspdefense" name="minspdefense" min="0" required></input><br>
+
+        <label for="maxspdefense">Max SP Defense</label><br>
+        <input type="number" id="maxspdefense" name="maxspdefense" min="0" required></input><br>
+
+        <label for="basespeed">Base Speed</label><br>
+        <input type="number" id="basespeed" name="basespeed" min="0" required></input><br>
+
+        <label for="minspeed">Min Speed</label><br>
+        <input type="number" id="minspeed" name="minspeed" min="0" required></input><br>
+
+        <label for="maxspeed">Max Speed</label><br>
+        <input type="number" id="maxspeed" name="maxspeed" min="0" required></input><br>
+
+        <label for="total">Total</label><br>
+        <input type="number" id="total" name="total" min="0" required></input><br>
+
+        <button type="submit">Submit</button>
+    </form> 
+{{ template "footer.html" }}

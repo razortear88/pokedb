@@ -6,6 +6,7 @@
 {{ template "header.html" }}
     <button onclick="location.href='/move'"><-</button>
     {{ if ne .move.Name "" }}
+        {{ $selectedType := .move.TypeName }}
         <form action="/move/{{ .move.Name }}/update" method="post">
             <label for="name">Name</label><br>
             <input type="text" placeholder="Move Name" id="name" name="name" required value="{{ .move.Name }}"><br>
@@ -17,10 +18,10 @@
                 <option value="Status">Status</option>
             </select><br>
 
-            <label for="typeName">Type Name</label><br>
-            <select name="typeName" selected="{{ .move.TypeName }}"><br>
+            <label for="typename">Type Name</label><br>
+            <select name="typename"><br>
                 {{ range .types }}
-                    <option value="{{ .Name }}">{{ .Name }}</option>
+                    <option value="{{ .Name }}" {{ if eq $selectedType .Name }} selected {{ end }}>{{ .Name }}</option>
                 {{ end }}
             </select><br>
 
@@ -33,8 +34,8 @@
             <label for="pp">PP</label><br>
             <input type="number" name="pp" placeholder="1" min="1" required value="{{ .move.PP }}"><br>
 
-            <label for="makeContact">Make Contact</label><br>
-            <select name="makeContact" selected="{{ .move.MakeContact }}"><br>
+            <label for="makecontact">Make Contact</label><br>
+            <select name="makecontact" selected="{{ .move.MakeContact }}"><br>
                 <option value="true">Yes</option>
                 <option value="false">No</option>
             </select><br>

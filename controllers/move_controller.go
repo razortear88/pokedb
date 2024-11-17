@@ -32,7 +32,7 @@ func CreateMove() gin.HandlerFunc {
 		}
 		move.Name = c.Request.PostForm["name"][0]
 		move.Category = c.Request.PostForm["category"][0]
-		move.TypeName = c.Request.PostForm["typeName"][0]
+		move.TypeName = c.Request.PostForm["typename"][0]
 
 		power, err := strconv.Atoi(c.Request.PostForm["power"][0])
 		if err != nil {
@@ -54,12 +54,12 @@ func CreateMove() gin.HandlerFunc {
 			return
 		}
 		move.PP = pp
-		makeContact, err := strconv.ParseBool(c.Request.PostForm["makeContact"][0])
+		makecontact, err := strconv.ParseBool(c.Request.PostForm["makecontact"][0])
 		if err != nil {
 			c.JSON(http.StatusBadRequest, responses.MoveResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
 			return
 		}
-		move.MakeContact = makeContact
+		move.MakeContact = makecontact
 
 		move.Effect = c.Request.PostForm["effect"][0]
 
@@ -145,7 +145,7 @@ func EditMove() gin.HandlerFunc {
 
 		move.Name = c.Request.PostForm["name"][0]
 		move.Category = c.Request.PostForm["category"][0]
-		move.TypeName = c.Request.PostForm["typeName"][0]
+		move.TypeName = c.Request.PostForm["typename"][0]
 
 		power, err := strconv.Atoi(c.Request.PostForm["power"][0])
 		if err != nil {
@@ -168,12 +168,12 @@ func EditMove() gin.HandlerFunc {
 		}
 		move.PP = pp
 
-		makeContact, err := strconv.ParseBool(c.Request.PostForm["makeContact"][0])
+		makecontact, err := strconv.ParseBool(c.Request.PostForm["makecontact"][0])
 		if err != nil {
 			c.JSON(http.StatusBadRequest, responses.MoveResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
 			return
 		}
-		move.MakeContact = makeContact
+		move.MakeContact = makecontact
 
 		move.Effect = c.Request.PostForm["effect"][0]
 
@@ -186,11 +186,11 @@ func EditMove() gin.HandlerFunc {
 		update := bson.M{
 			"name":        move.Name,
 			"category":    move.Category,
-			"typeName":    move.TypeName,
+			"typename":    move.TypeName,
 			"power":       move.Power,
 			"accuracy":    move.Accuracy,
 			"pp":          move.PP,
-			"makeContact": move.MakeContact,
+			"makecontact": move.MakeContact,
 			"effect":      move.Effect}
 
 		_, updateErr := moveCollection.UpdateOne(ctx, bson.M{"name": moveName}, bson.M{"$set": update})
@@ -226,7 +226,7 @@ func DeleteMove() gin.HandlerFunc {
 	}
 }
 
-func GetDetailedMove(ctx *gin.Context) []bson.M {
+func GetDetailedMove(ctx *gin.Context) bson.M {
 	moveName := ctx.Param("moveName")
 
 	pipeline := mongo.Pipeline{
@@ -238,15 +238,20 @@ func GetDetailedMove(ctx *gin.Context) []bson.M {
 	cursor, aggErr := moveCollection.Aggregate(context.TODO(), pipeline)
 	if aggErr != nil {
 		log.Println(aggErr.Error())
-		return []bson.M{}
+		return bson.M{}
 	}
 
 	var results []bson.M
 	// cursor.
 	if cursorErr := cursor.All(context.TODO(), &results); cursorErr != nil {
-		panic(cursorErr)
+		log.Println(cursorErr.Error())
+		return bson.M{}
 	}
 
-	return results
+	if len(results) == 0 {
+		return bson.M{}
+	}
+
+	return results[0]
 
 }

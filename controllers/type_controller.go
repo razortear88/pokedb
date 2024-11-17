@@ -90,10 +90,10 @@ func GetAllTypes() []models.Type {
 }
 
 func GetType(ctx *gin.Context) models.Type {
-	typeName := ctx.Param("typeName")
+	typename := ctx.Param("typename")
 	var typee models.Type
 
-	typeCollection.FindOne(ctx, bson.M{"name": typeName}).Decode(&typee)
+	typeCollection.FindOne(ctx, bson.M{"name": typename}).Decode(&typee)
 
 	if len(typee.Color) == 4 {
 		typee.Color = "#" + strings.Repeat(string(typee.Color[1]), 2) + strings.Repeat(string(typee.Color[2]), 2) + strings.Repeat(string(typee.Color[3]), 2)
@@ -105,7 +105,7 @@ func GetType(ctx *gin.Context) models.Type {
 func EditType() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		typeName := c.Param("typeName")
+		typename := c.Param("typename")
 		var typee models.Type
 		defer cancel()
 
@@ -130,7 +130,7 @@ func EditType() gin.HandlerFunc {
 		}
 
 		update := bson.M{"name": typee.Name, "color": typee.Color}
-		_, err := typeCollection.UpdateOne(ctx, bson.M{"name": typeName}, bson.M{"$set": update})
+		_, err := typeCollection.UpdateOne(ctx, bson.M{"name": typename}, bson.M{"$set": update})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, responses.TypeResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
 			return
@@ -143,10 +143,10 @@ func EditType() gin.HandlerFunc {
 func DeleteType() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		typeName := c.Param("typeName")
+		typename := c.Param("typename")
 		defer cancel()
 
-		result, err := typeCollection.DeleteOne(ctx, bson.M{"name": typeName})
+		result, err := typeCollection.DeleteOne(ctx, bson.M{"name": typename})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, responses.TypeResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
 			return
@@ -163,10 +163,10 @@ func DeleteType() gin.HandlerFunc {
 	}
 }
 
-func GetColor(typeName string) string {
+func GetColor(typename string) string {
 	var typee models.Type
 
-	typeCollection.FindOne(nil, bson.M{"name": typeName}).Decode(&typee)
+	typeCollection.FindOne(nil, bson.M{"name": typename}).Decode(&typee)
 
 	return typee.Color
 }
