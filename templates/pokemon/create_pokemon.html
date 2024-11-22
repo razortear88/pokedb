@@ -4,9 +4,9 @@
 <title>Pokedb</title>
 {{ end }}
 {{ template "header.html" }}
-    {{ 5%+2 }}
+    {{ $counter := 0 }}
     <button onclick="location.href='/pokemon'"><-</button>
-    <form action="/pokemon" method="post">
+    <form action="/pokemon" method="post" enctype="multipart/form-data">
         <label for="name">Name</label><br>
         <input type="text" placeholder="Pokemon Name" id="name" name="name" required><br>
 
@@ -15,13 +15,23 @@
 
         <label for="nationalno">National No</label><br>
         <input type="text" placeholder="National No" id="nationalno" name="nationalno" required><br>
-
-        <!-- type -->
         <label for="type">Type</label><br>
+        <table style="border:1px solid black">
+            <tr>
             {{ range .types }}
-                <label for="type{{ .Name }}"> {{ .Name }}
-                <input type="checkbox" id="type{{ .Name }}" name="type{{ .Name }}" value="{{ .Name }}"><br>
+                <td style="border:1px solid black;">
+                    {{ $counter = len (printf "a%*s" $counter "") }}
+                    <label style="margin: 0px 5px 0px 5px;">{{ .Name }}
+                    <input type="checkbox" id="type[]" name="type[]" value="{{ .Name }}"><br>
+                </td>
+                {{ if eq $counter 3}}
+                    {{ $counter = 0 }}
+                    </tr>
+                    <tr>
+                {{ end }}
             {{ end }}
+            </tr>
+        </table>
         <br>
 
         <input type="file" id="image" name="image" accept="image/png, image/jpeg, image/jpg"/ required><br><br>

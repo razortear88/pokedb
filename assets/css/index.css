@@ -68,6 +68,10 @@ body {
     margin-bottom: 0.2rem;
 }
 
+body{
+  margin-bottom: 65px;
+}
+
 .social-links a {
   color: white;
   padding: 0px 5px 0px 5px;
