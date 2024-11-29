@@ -15,5 +15,13 @@ func PokemonRoute(route *gin.RouterGroup) {
 			"types": controllers.GetAllTypes(),
 		})
 	})
+
+	pokemonRoute.GET("", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "list_pokemon.html", gin.H{
+			"pokemons": controllers.GetAllPokemons(),
+			"title":    "List Pokemon",
+		})
+	})
+
 	pokemonRoute.POST("", controllers.CreatePokemon())
 }
