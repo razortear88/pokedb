@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"net/url"
+	"path"
 	"strings"
 	"time"
 
@@ -38,6 +40,28 @@ func CreateGame() gin.HandlerFunc {
 			log.Printf("error upload file")
 			return
 		}
+
+		fileExtension := path.Ext(file.Filename) //obtain the extension of file
+		rightFileExtension := false
+		for _, extension := range [3]string{".png", ".jpeg", ".jpg"} {
+			if fileExtension == extension {
+				rightFileExtension = true
+				break
+			}
+		}
+
+		if !rightFileExtension {
+			c.JSON(http.StatusBadRequest, responses.GameResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": "Only accept .png, .jpg, .jpeg extension  for cover"}})
+			return
+		}
+
+		f, openErr := file.Open()
+
+		if openErr != nil {
+			log.Fatal(openErr)
+			return
+		}
+
 		// setup s3 uploader
 		cfg, configErr := config.LoadDefaultConfig(ctx)
 		if configErr != nil {
@@ -48,26 +72,6 @@ func CreateGame() gin.HandlerFunc {
 		// Create an Amazon S3 service client
 		client := s3.NewFromConfig(cfg)
 		uploader := manager.NewUploader(client)
-
-		f, openErr := file.Open()
-
-		if openErr != nil {
-			log.Fatal(openErr)
-			return
-		}
-
-		result, uploadErr := uploader.Upload(ctx, &s3.PutObjectInput{
-			Bucket: aws.String("my-pokedb-project"),
-			Key:    aws.String(file.Filename),
-			Body:   f,
-			ACL:    "public-read",
-		})
-		if uploadErr != nil {
-			log.Fatal(uploadErr)
-			return
-		}
-
-		game.Cover = result.Location
 
 		//validate the request body
 		if err := c.ShouldBind(&game); err != nil {
@@ -104,11 +108,28 @@ func CreateGame() gin.HandlerFunc {
 		newGame := models.Game{
 			Name:       game.Name,
 			Generation: game.Generation,
-			Cover:      game.Cover,
 		}
 
 		gameCollection.InsertOne(ctx, newGame)
 
+		result, uploadErr := uploader.Upload(ctx, &s3.PutObjectInput{
+			Bucket: aws.String("my-pokedb-project"),
+			Key:    aws.String(file.Filename),
+			Body:   f,
+			ACL:    "public-read",
+		})
+		if uploadErr != nil {
+			log.Fatal(uploadErr)
+			return
+		}
+
+		update := bson.M{"cover": result.Location}
+		_, updateErr := gameCollection.UpdateOne(ctx, bson.M{"name": game.Name}, bson.M{"$set": update})
+
+		if updateErr != nil {
+			c.JSON(http.StatusInternalServerError, responses.GameResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
+			return
+		}
 		c.Redirect(http.StatusFound, "/game")
 	}
 }
@@ -153,24 +174,32 @@ func EditGame() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		gameName := c.Param("gameName")
 		var game models.Game
-		var oldCover models.Game
 
-		filter := bson.D{{"name", gameName}}
-		project := bson.D{{"cover", 1}}
-		opts := options.FindOne().SetProjection(project)
-		coverErr := gameCollection.FindOne(ctx, filter, opts).Decode(&oldCover)
-		if coverErr != nil {
-			c.JSON(http.StatusInternalServerError, responses.GameResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": coverErr.Error()}})
-			return
-		}
 		defer cancel()
 
 		file, _ := c.FormFile("cover")
 
-		if file == nil {
-			game.Cover = oldCover.Cover
-		} else {
-			game.Cover = file.Filename
+		if file != nil {
+			fileExtension := path.Ext(file.Filename) //obtain the extension of file
+			rightFileExtension := false
+			for _, extension := range [3]string{".png", ".jpeg", ".jpg"} {
+				if fileExtension == extension {
+					rightFileExtension = true
+					break
+				}
+			}
+
+			if !rightFileExtension {
+				c.JSON(http.StatusBadRequest, responses.GameResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": "Only accept .png, .jpg, .jpeg extension  for cover"}})
+				return
+			}
+
+			_, openErr := file.Open()
+			if openErr != nil {
+				log.Fatal(openErr)
+				return
+			}
+
 		}
 
 		if len(c.Request.PostForm["name"]) != 0 {
@@ -192,15 +221,37 @@ func EditGame() gin.HandlerFunc {
 			return
 		}
 
-		if game.Cover != oldCover.Cover {
+		update := bson.M{"name": game.Name, "generation": game.Generation}
+		_, err := gameCollection.UpdateOne(ctx, bson.M{"name": gameName}, bson.M{"$set": update})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, responses.GameResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
+			return
+		}
+
+		if file != nil {
+			var oldCover models.Game
+			filter := bson.D{{"name", game.Name}}
+			project := bson.D{{"cover", 1}}
+			opts := options.FindOne().SetProjection(project)
+			coverErr := gameCollection.FindOne(ctx, filter, opts).Decode(&oldCover)
+			if coverErr != nil {
+				c.JSON(http.StatusInternalServerError, responses.GameResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": coverErr.Error()}})
+				return
+			}
 			// delete old cover
+			f, _ := file.Open()
 			coverFileName := strings.Split(oldCover.Cover, "/")
+
+			parsedUrl, parseErr := url.PathUnescape((coverFileName[len(coverFileName)-1]))
+			if parseErr != nil {
+				log.Printf("error: %v", parseErr)
+				return
+			}
 
 			input := &s3.DeleteObjectInput{
 				Bucket: aws.String("my-pokedb-project"),
-				Key:    aws.String(coverFileName[len(coverFileName)-1]),
+				Key:    aws.String(parsedUrl),
 			}
-
 			cfg, configErr := config.LoadDefaultConfig(ctx)
 
 			if configErr != nil {
@@ -219,13 +270,6 @@ func EditGame() gin.HandlerFunc {
 			// upload new cover
 			uploader := manager.NewUploader(client)
 
-			f, openErr := file.Open()
-
-			if openErr != nil {
-				log.Fatal(openErr)
-				return
-			}
-
 			result, uploadErr := uploader.Upload(ctx, &s3.PutObjectInput{
 				Bucket: aws.String("my-pokedb-project"),
 				Key:    aws.String(file.Filename),
@@ -238,14 +282,12 @@ func EditGame() gin.HandlerFunc {
 				return
 			}
 
-			game.Cover = result.Location
-		}
-
-		update := bson.M{"name": game.Name, "generation": game.Generation, "cover": game.Cover}
-		_, err := gameCollection.UpdateOne(ctx, bson.M{"name": gameName}, bson.M{"$set": update})
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, responses.GameResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
-			return
+			update := bson.M{"cover": result.Location}
+			_, err := gameCollection.UpdateOne(ctx, bson.M{"name": game.Name}, bson.M{"$set": update})
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, responses.GameResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
+				return
+			}
 		}
 
 		c.Redirect(http.StatusFound, "/game")
@@ -263,9 +305,9 @@ func DeleteGame() gin.HandlerFunc {
 		filter := bson.D{{"name", gameName}}
 		project := bson.D{{"cover", 1}}
 		opts := options.FindOne().SetProjection(project)
-		coverErr := gameCollection.FindOne(ctx, filter, opts).Decode(&game)
-		if coverErr != nil {
-			c.JSON(http.StatusInternalServerError, responses.GameResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": coverErr.Error()}})
+		dbErr := gameCollection.FindOne(ctx, filter, opts).Decode(&game)
+		if dbErr != nil {
+			c.JSON(http.StatusInternalServerError, responses.GameResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": dbErr.Error()}})
 			return
 		}
 
@@ -284,9 +326,16 @@ func DeleteGame() gin.HandlerFunc {
 
 		coverFileName := strings.Split(game.Cover, "/")
 
+		parsedUrl, parseErr := url.PathUnescape(coverFileName[len(coverFileName)-1])
+
+		if parseErr != nil {
+			log.Printf("error: %v", parseErr)
+			return
+		}
+
 		input := &s3.DeleteObjectInput{
 			Bucket: aws.String("my-pokedb-project"),
-			Key:    aws.String(coverFileName[len(coverFileName)-1]),
+			Key:    aws.String(parsedUrl),
 		}
 
 		cfg, configErr := config.LoadDefaultConfig(ctx)

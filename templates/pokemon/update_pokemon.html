@@ -1,0 +1,114 @@
+{{ if .title }}
+<title>{{ .title }}</title>
+{{ else }}
+<title>Pokedb</title>
+{{ end }}
+{{ template "header.html" }}
+    {{ $counter := 0 }}
+    <button onclick="location.href='/pokemon'"><-</button>
+    {{ if ne .pokemon.Name "" }}
+        {{ $pokemonType1 := .pokemonType1}}
+        {{ $pokemonType2 := .pokemonType2}}
+        <form action="/pokemon/{{ .pokemon.Name }}/update" method="post" enctype="multipart/form-data">
+            <label for="name">Name</label><br>
+            <input type="text" placeholder="Pokemon Name" id="name" name="name" value="{{.pokemon.Name}}" required><br>
+
+            <label for="species">Species</label><br>
+            <input type="text" placeholder="Species" id="species" name="species" value="{{.pokemon.Species}}" required><br>
+
+            <label for="nationalno">National No</label><br>
+            <input type="number" id="nationalno" name="nationalno" min="0" value="{{.pokemon.NationalNo}}" required></input><br>
+
+            <label for="type">Type</label><br>
+            <table style="border:1px solid black">
+                <tr>
+                {{ range $type := .types }}
+                    <td style="border:1px solid black;">
+                        {{ $counter = len (printf "a%*s" $counter "") }}
+                        <label style="margin: 0px 5px 0px 5px;">{{ $type.Name }}
+                        <input type="checkbox" id="type[]" name="type[]" value="{{ $type.Name }}"
+                        {{if or (eq $type.Name $pokemonType1) (eq $type.Name $pokemonType2) }}
+                            checked
+                        {{ end }}> <br>
+                    </td>
+                    {{ if eq $counter 3}}
+                        {{ $counter = 0 }}
+                        </tr>
+                        <tr>
+                    {{ end }}
+                {{ end }}
+                </tr>
+            </table>
+            <br>
+            <img width="200" src="{{ .pokemon.Image }}" /><br><br>
+            <input type="file" id="image" name="image" accept="image/png, image/jpeg, image/jpg"/ required><br><br>
+
+            <label for="height">Height (m)</label><br>
+            <input type="number" id="height" name="height" step="0.1" min="0" value="{{.pokemon.Height}}" required></input><br>
+
+            <label for="weight">Weight (kg)</label><br>
+            <input type="number" id="weight" name="weight" step="0.1" min="0" value="{{.pokemon.Weight}}" required></input><br>
+
+            <label for="basehp">Base HP</label><br>
+            <input type="number" id="basehp" name="basehp" min="0" value="{{.pokemon.BaseHP}}" required></input><br>
+
+            <label for="minhp">Min HP</label><br>
+            <input type="number" id="minhp" name="minhp" min="0" value="{{.pokemon.MinHP}}" required></input><br>
+
+            <label for="maxhp">Max HP</label><br>
+            <input type="number" id="maxhp" name="maxhp" min="0" value="{{.pokemon.MaxHP}}" required></input><br>
+
+            <label for="baseattack">Base Attack</label><br>
+            <input type="number" id="baseattack" name="baseattack" min="0" value="{{.pokemon.BaseAttack}}" required></input><br>
+
+            <label for="minattack">Min Attack</label><br>
+            <input type="number" id="minattack" name="minattack" min="0" value="{{.pokemon.MinAttack}}" required></input><br>
+
+            <label for="maxattack">Max Attack</label><br>
+            <input type="number" id="maxattack" name="maxattack" min="0" value="{{.pokemon.MaxAttack}}" required></input><br>
+
+            <label for="basedefense">Base Defense</label><br>
+            <input type="number" id="basedefense" name="basedefense" min="0" value="{{.pokemon.BaseDefense}}" required></input><br>
+
+            <label for="mindefense">Min Defense</label><br>
+            <input type="number" id="mindefense" name="mindefense" min="0" value="{{.pokemon.MinDefense}}" required></input><br>
+
+            <label for="maxdefense">Max Defense</label><br>
+            <input type="number" id="maxdefense" name="maxdefense" min="0" value="{{.pokemon.MaxDefense}}" required></input><br>
+
+            <label for="basespattack">Base SP Attack</label><br>
+            <input type="number" id="basespattack" name="basespattack" min="0" value="{{.pokemon.BaseSPAttack}}" required></input><br>
+
+            <label for="minspattack">Min SP Attack</label><br>
+            <input type="number" id="minspattack" name="minspattack" min="0" value="{{.pokemon.MinSPAttack}}" required></input><br>
+
+            <label for="maxspattack">Max SP Attack</label><br>
+            <input type="number" id="maxspattack" name="maxspattack" min="0" value="{{.pokemon.MaxSPAttack}}" required></input><br>
+
+            <label for="basespdefense">Base SP Defense</label><br>
+            <input type="number" id="basespdefense" name="basespdefense" min="0" value="{{.pokemon.BaseSPDefense}}" required></input><br>
+
+            <label for="minspdefense">Min SP Defense</label><br>
+            <input type="number" id="minspdefense" name="minspdefense" min="0" value="{{.pokemon.MinSPDefense}}" required></input><br>
+
+            <label for="maxspdefense">Max SP Defense</label><br>
+            <input type="number" id="maxspdefense" name="maxspdefense" min="0" value="{{.pokemon.MaxSPDefense}}" required></input><br>
+
+            <label for="basespeed">Base Speed</label><br>
+            <input type="number" id="basespeed" name="basespeed" min="0" value="{{.pokemon.BaseSpeed}}" required></input><br>
+
+            <label for="minspeed">Min Speed</label><br>
+            <input type="number" id="minspeed" name="minspeed" min="0" value="{{.pokemon.MinSpeed}}" required></input><br>
+
+            <label for="maxspeed">Max Speed</label><br>
+            <input type="number" id="maxspeed" name="maxspeed" min="0" value="{{.pokemon.MaxSpeed}}" required></input><br>
+
+            <label for="total">Total</label><br>
+            <input type="number" id="total" name="total" min="0" value="{{.pokemon.Total}}" required></input><br><br>
+
+            <button type="submit">Submit</button>
+        </form>
+    {{ else }}
+        <p>Pokemon Does Not Exists</p>
+    {{ end }}
+{{ template "footer.html" }}

@@ -2,12 +2,12 @@ package models
 
 type Pokemon struct {
 	Name       string   `json:"name" validate:"required"`
-	NationalNo string   `json:"nationalno" validate:"required"`
+	NationalNo int      `json:"nationalno" validate:"required"`
 	Type       []string `json:"type" validate:"required"`
 	Species    string   `json:"species" validate:"required"`
 	Height     float32  `json:"height" validate:"required"`
 	Weight     float32  `json:"weight" validate:"required"`
-	Image      string   `json:"image" validate:"required"`
+	Image      string   `json:"image"`
 
 	BaseHP int `json:"basehp" validate:"required"`
 	MinHP  int `json:"minhp" validate:"required"`

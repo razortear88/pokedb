@@ -13,9 +13,13 @@
             </tr>
             {{range .pokemons}}
                 <tr>
-                    <td><span style="width: 10px;"><a style="background-color: skyblue; color:white;" class="border rounded-pill px-3 text-decoration-none fw-bold" href="/pokemon/{{ .Name }}">{{ .Name }}</a></span></td>
-                    <td><button  onclick="location.href = '/pokemon/{{ .Name }}/update';">Update</button></td>
-                    <form action="/pokemon/{{ .Name }}/delete" method="post">
+                    <td><span style="width: 10px;"><a style="background-color: skyblue; color:white;" class="border rounded-pill px-3 text-decoration-none fw-bold" href="/pokemon/{{ .name }}">{{ .name }}</a></span>
+                    {{range $type := .lookup}}
+                        <span style="width: 10px;"><a style="background-color: {{ $type.color }}; color:white;" class="border rounded-pill px-3 text-decoration-none fw-bold" href="/type/{{ $type.name }}">{{ $type.name }}</a></span>
+                    {{end}}
+                    </td>
+                    <td><button  onclick="location.href = '/pokemon/{{ .name }}/update';">Update</button></td>
+                    <form action="/pokemon/{{ .name }}/delete" method="post">
                         <td><button type="submit" onclick="return confirm('are you sure?')">Delete</button></td>
                     </form>
                 </tr>

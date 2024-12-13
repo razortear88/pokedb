@@ -1,0 +1,55 @@
+{{ if .title }}
+<title>{{ .title }}</title>
+{{ else }}
+<title>Pokedb</title>
+{{ end }}
+{{ template "header.html" }}
+    <button onclick="location.href='/pokemon'"><-</button><br>
+    {{ if .pokemon }}
+        <br>
+        <img width="200" src="{{ .pokemon.image }}" />
+        <p>Name: {{ .pokemon.name }}</p>
+        <p>National No: {{ .pokemon.nationalno }}</p>
+        <p>Type: 
+            {{range $type := .pokemon.lookup}}
+                <span style="width: 10px;"><a style="background-color: {{ $type.color }}; color:white;" class="border rounded-pill px-3 text-decoration-none fw-bold" href="/type/{{ $type.name }}">{{ $type.name }}</a></span>
+            {{end}}
+        </p>
+        <p>Species: {{ .pokemon.species }}</p>
+        <p>Height: {{ .pokemon.height }}</p>
+        <p>Weight: {{ .pokemon.weight }}</p>
+
+        <p>Base HP: {{ .pokemon.basehp }}</p>
+        <p>Min HP: {{ .pokemon.minhp }}</p>
+        <p>Max HP: {{ .pokemon.maxhp }}</p>
+
+        <p>Base Attack: {{ .pokemon.baseattack }}</p>
+        <p>Min Attack: {{ .pokemon.minattack }}</p>
+        <p>Max Attack: {{ .pokemon.maxattack }}</p>
+
+        <p>Base Defense: {{ .pokemon.basedefense }}</p>
+        <p>Min Defense: {{ .pokemon.mindefense }}</p>
+        <p>Max Defense: {{ .pokemon.maxdefense }}</p>
+
+        <p>Base Sp Attack: {{ .pokemon.basespattack }}</p>
+        <p>Min Sp Attack: {{ .pokemon.minspattack }}</p>
+        <p>Max Sp Attack: {{ .pokemon.maxspattack }}</p>
+
+        <p>Base Sp Defense: {{ .pokemon.basespdefense }}</p>
+        <p>Min Sp Defense: {{ .pokemon.minspdefense }}</p>
+        <p>Max Sp Defense: {{ .pokemon.maxspdefense }}</p>
+
+        <p>Base Speed: {{ .pokemon.basespeed }}</p>
+        <p>Min Speed: {{ .pokemon.minspeed }}</p>
+        <p>Max Speed: {{ .pokemon.maxspeed }}</p>
+
+        <p>Total: {{ .pokemon.total }}</p>
+
+        <p>Prev Evolution: {{ .pokemon.prevevo }} <button id="prev_evo" onclick="hellow()">Edit</button></p>
+        <p>Next Evolution: {{ .pokemon.nextevo }} <button id="next_evo">Edit</button></p>
+    {{ else }}
+        <p>Pokemon Does Not Exists</p>
+    {{ end }}
+    <script src="/assets/js/script.js"> </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{{ template "footer.html" }}
